@@ -1,0 +1,19 @@
+## Requisitos do backend (instale com: pip install -r requirements.txt)
+## Versões fixadas para reprodutibilidade em ambiente de desenvolvimento.
+annotated-types==0.7.0
+blinker==1.9.0
+click==8.3.1
+Flask==3.1.2
+flask-cors==6.0.1
+flask-openapi3==4.3.0
+Flask-SQLAlchemy==3.1.1
+flask-swagger-ui==5.21.0
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+pydantic==2.12.4
+pydantic_core==2.41.5
+SQLAlchemy==2.0.44
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+Werkzeug==3.1.3

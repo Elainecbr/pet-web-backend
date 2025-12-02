@@ -1,0 +1,513 @@
+# backend/swagger.yaml
+swagger: '2.0' # Versão da especificação OpenAPI
+info:
+  title: Pet Web API # Título da sua API
+  description: API completa para gerenciar usuários, cachorros e suas raças no sistema Pet Web.
+  version: 1.0.0 # Versão da sua API
+host: localhost:5000 # Onde sua API estará rodando (padrão do Flask)
+schemes:
+  - http # Protocolo utilizado
+basePath: / # Caminho base para todas as rotas
+
+# Seção de rotas (endpoints)
+paths:
+  /racas:
+    get:
+      summary: Retorna a lista de todas as raças de cachorros.
+      description: Recupera uma lista completa de todas as raças de cachorro cadastradas, incluindo seus detalhes como porte, grupo, e imagem associada.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Uma lista de objetos de raça.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Raca'
+          examples:
+            application/json:
+              - id: 1
+                nome: "Labrador Retriever"
+                porte: "Grande"
+                grupo: "Companhia"
+                imagem: "labrador.jpg"
+                cuidados: "Escovação semanal; atividade física diária; atenção à alimentação."
+                comportamento: "Amigável, enérgico e muito sociável com famílias."
+                racao: "Ração para porte grande, balanceada para cães adultos."
+        500:
+          description: Erro interno do servidor.
+
+  /racas/{nome_raca}:
+    get:
+      summary: Retorna os detalhes de uma raça específica pelo nome.
+      description: Busca e retorna todas as informações detalhadas (cuidados, comportamento, recomendação de ração) de uma raça de cachorro específica.
+      parameters:
+        - name: nome_raca
+          in: path
+          description: 'Nome da raça, formatado com hífens (ex: "bulldog-frances", "labrador-retriever"). A API converte para o formato interno (ex: "Bulldog Frances").'
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Detalhes da raça.
+          schema:
+            $ref: '#/definitions/Raca'
+        404:
+          description: Raça não encontrada.
+
+  /usuarios:
+    get:
+      summary: Lista todos os usuários cadastrados.
+      description: Retorna uma lista de todos os usuários registrados no sistema. Útil para administração ou debug.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Uma lista de objetos de usuário.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+    post:
+      summary: Cadastra um novo usuário.
+      description: Cria um novo registro de usuário no banco de dados com nome completo, e-mail e telefone.
+      parameters:
+        - name: user
+          in: body
+          description: Dados do usuário a ser cadastrado. E-mail deve ser único.
+          required: true
+          schema:
+            $ref: '#/definitions/UserInput'
+          x-example:
+            nome_completo: "João da Silva"
+            email: "joaodasilva@example.com"
+            telefone: "(21) 99999-9999"
+      produces:
+        - application/json
+      responses:
+        201:
+          description: Usuário criado com sucesso. Retorna o objeto do usuário recém-criado.
+          schema:
+            $ref: '#/definitions/User'
+          examples:
+            application/json:
+              id: 12
+              nome_completo: "João da Silva"
+              email: "joaodasilva@example.com"
+              telefone: "(21) 99999-9999"
+              data_cadastro: "2025-11-18T12:00:00Z"
+        400:
+          description: Dados incompletos ou formato inválido na requisição.
+        409:
+          description: E-mail já cadastrado, indicando conflito.
+          examples:
+            application/json:
+              message: "E-mail já cadastrado"
+
+  /usuarios/email/{email}:
+    get:
+      summary: Busca um usuário pelo e-mail.
+      description: Retorna os dados de um usuário específico utilizando seu endereço de e-mail como identificador.
+      parameters:
+        - name: email
+          in: path
+          description: Endereço de e-mail do usuário a ser buscado.
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Dados do usuário encontrado.
+          schema:
+            $ref: '#/definitions/User'
+          examples:
+            application/json:
+              id: 12
+              nome_completo: "João da Silva"
+              email: "joaodasilva@example.com"
+              telefone: "(21) 99999-9999"
+              data_cadastro: "2025-11-18T12:00:00Z"
+        404:
+          description: Usuário com o e-mail fornecido não encontrado.
+###########################
+  /usuarios/{user_id}:
+  ####################
+    get:
+      summary: Retorna um usuário por ID.
+      description: Busca e retorna os dados de um usuário pelo seu ID.
+      parameters:
+        - name: user_id
+          in: path
+          description: ID do usuário a ser buscado.
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Objeto do usuário.
+          schema:
+            $ref: '#/definitions/User'
+        404:
+          description: Usuário não encontrado.
+    delete:
+      summary: Remove um usuário e seus cachorros.
+      description: Exclui um usuário e todos os cachorros associados (comportamento de cascade dependendo do modelo).
+      parameters:
+        - name: user_id
+          in: path
+          description: ID do usuário a ser removido.
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Usuário removido com sucesso.
+        404:
+          description: Usuário não encontrado.
+  ########
+  ###################
+    put:
+      summary: Atualiza os dados de um usuário existente.
+      description: Modifica as informações de um usuário (nome completo, e-mail, telefone) com base no seu ID. Campos não fornecidos não serão alterados.
+      parameters:
+        - name: user_id
+          in: path
+          description: ID do usuário a ser atualizado.
+          required: true
+          type: integer
+        - name: user
+          in: body
+          description: Novos dados do usuário (pode ser parcial).
+          required: true
+          schema:
+            $ref: '#/definitions/UserInput'
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Usuário atualizado com sucesso. Retorna o objeto do usuário atualizado.
+          schema:
+            $ref: '#/definitions/User'
+        404:
+          description: Usuário com o ID fornecido não encontrado.
+        400:
+          description: Dados inválidos na requisição.
+
+  /cachorros:
+    post:
+      summary: Cadastra um novo cachorro.
+      description: Cria um novo registro de cachorro, associando-o a um usuário existente e a uma raça pré-cadastrada.
+      parameters:
+        - name: cachorro
+          in: body
+          description: Dados do cachorro a ser cadastrado, incluindo nome do pet, idade, peso, informações extras, ID do proprietário (user_id) e ID da raça (raca_id).
+          required: true
+          schema:
+            $ref: '#/definitions/CachorroInput'
+          x-example:
+            nome_pet: "Luna"
+            idade: 3
+            peso: 12.5
+            info_extra: "Alergia a pulgas; precisa de medicação semanal."
+            user_id: 12
+            raca_id: 4
+      produces:
+        - application/json
+      responses:
+        201:
+          description: Cachorro criado com sucesso. Retorna o objeto do cachorro recém-criado.
+          schema:
+            $ref: '#/definitions/Cachorro'
+          examples:
+            application/json:
+              id: 42
+              nome_pet: "Luna"
+              idade: 3
+              peso: 12.5
+              info_extra: "Alergia a pulgas; precisa de medicação semanal."
+              data_registro: "2025-11-18T12:05:00Z"
+              user_id: 12
+              raca_id: 4
+        409:
+          description: Já existe um cachorro cadastrado para este usuário com o mesmo nome (duplicidade detectada).
+          schema:
+            $ref: '#/definitions/Cachorro'
+          examples:
+            application/json:
+              id: 41
+              nome_pet: "Luna"
+              idade: 2
+              peso: 11.0
+              info_extra: "Alergia a pulgas."
+              data_registro: "2024-10-01T09:30:00Z"
+              user_id: 12
+              raca_id: 4
+        400:
+          description: Dados incompletos ou inválidos para o cadastro.
+        404:
+          description: Usuário ou Raça especificados pelos IDs não foram encontrados.
+
+  /cachorros/{cachorro_id}:
+    delete:
+      summary: Remove um cachorro pelo ID.
+      description: Exclui permanentemente um registro de cachorro do banco de dados com base no seu ID.
+      parameters:
+        - name: cachorro_id
+          in: path
+          description: ID do cachorro a ser removido.
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Cachorro removido com sucesso.
+        404:
+          description: Cachorro com o ID fornecido não encontrado.
+    get:
+      summary: Retorna um cachorro por ID.
+      description: Busca um cachorro pelo seu ID e retorna os detalhes incluindo informações da raça.
+      parameters:
+        - name: cachorro_id
+          in: path
+          description: ID do cachorro a ser buscado.
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Objeto de cachorro com detalhes da raça.
+          schema:
+            $ref: '#/definitions/CachorroWithBreed'
+        404:
+          description: Cachorro não encontrado.
+    put:
+      summary: Atualiza campos de um cachorro existente.
+      description: Atualiza campos de um cachorro (nome, idade, peso, info_extra, raca_id, user_id). Campos não fornecidos não serão alterados.
+      parameters:
+        - name: cachorro_id
+          in: path
+          description: ID do cachorro a ser atualizado.
+          required: true
+          type: integer
+        - name: cachorro
+          in: body
+          description: Campos para atualizar no cachorro.
+          required: true
+          schema:
+            $ref: '#/definitions/CachorroInput'
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Cachorro atualizado com sucesso. Retorna o objeto atualizado.
+          schema:
+            $ref: '#/definitions/CachorroWithBreed'
+        404:
+          description: Cachorro, usuário ou raça não encontrados.
+
+  /usuarios/{user_id}/cachorros:
+    get:
+      summary: Lista todos os cachorros de um usuário específico.
+      description: Retorna uma lista de todos os cachorros que pertencem a um usuário, identificado pelo seu ID. Inclui detalhes da raça para cada cachorro.
+      parameters:
+        - name: user_id
+          in: path
+          description: ID do usuário.
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Lista de objetos de cachorro do usuário.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CachorroWithBreed'
+        404:
+          description: Usuário com o ID fornecido não encontrado.
+
+  /usuarios/{user_id}/cachorros/{nome_pet}:
+    get:
+      summary: Retorna um cachorro de um usuário pelo nome do pet.
+      description: Busca um cachorro específico pertencente ao usuário fornecido, usando o nome do pet. Retorna detalhes do cachorro com informações da raça.
+      parameters:
+        - name: user_id
+          in: path
+          description: ID do usuário.
+          required: true
+          type: integer
+        - name: nome_pet
+          in: path
+          description: Nome do pet a ser buscado (string).
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Objeto de cachorro com detalhes da raça.
+          schema:
+            $ref: '#/definitions/CachorroWithBreed'
+        404:
+          description: Cachorro ou usuário não encontrado.
+
+ #  ####### ##### /usuarios/{user_id}:
+    
+    
+
+
+
+
+
+# Definições de Esquemas (Objetos/Modelos de Dados)
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: ID único do usuário.
+      nome_completo:
+        type: string
+        description: Nome completo do usuário.
+      email:
+        type: string
+        format: email
+        description: Endereço de e-mail único do usuário.
+      telefone:
+        type: string
+        description: Número de telefone do usuário.
+      data_cadastro:
+        type: string
+        format: date-time
+        description: Data e hora do cadastro do usuário (formato ISO 8601 UTC).
+    required:
+      - nome_completo
+      - email
+  UserInput:
+    type: object
+    properties:
+      nome_completo:
+        type: string
+        description: Nome completo do usuário.
+      email:
+        type: string
+        format: email
+        description: Endereço de e-mail único do usuário.
+      telefone:
+        type: string
+        description: Número de telefone do usuário.
+    required:
+      - nome_completo
+      - email
+  Raca:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: ID único da raça.
+      nome:
+        type: string
+        description: Nome da raça.
+      porte:
+        type: string
+        description: Porte da raça (Pequeno, Médio, Grande).
+      grupo:
+        type: string
+        description: Grupo ao qual a raça pertence (Companhia, Farejadores, Trabalho, etc.).
+      imagem:
+        type: string
+        description: Nome do arquivo da imagem da raça.
+      cuidados:
+        type: string
+        description: Descrição dos cuidados específicos da raça.
+      comportamento:
+        type: string
+        description: Descrição do comportamento típico da raça.
+      racao:
+        type: string
+        description: Recomendação de ração para a raça.
+    required:
+      - nome
+  Cachorro:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: ID único do cachorro.
+      nome_pet:
+        type: string
+        description: Nome do pet.
+      idade:
+        type: integer
+        description: Idade do pet em anos.
+      peso:
+        type: number
+        format: float
+        description: Peso do pet em quilogramas.
+      info_extra:
+        type: string
+        description: Informações extras sobre o pet.
+      data_registro:
+        type: string
+        format: date-time
+        description: Data e hora do registro do pet (formato ISO 8601 UTC).
+      user_id:
+        type: integer
+        format: int64
+        description: ID do proprietário do pet.
+      raca_id:
+        type: integer
+        format: int64
+        description: ID da raça do pet.
+    required:
+      - nome_pet
+      - user_id
+      - raca_id
+  CachorroInput:
+    type: object
+    properties:
+      nome_pet:
+        type: string
+        description: Nome do pet.
+      idade:
+        type: integer
+        description: Idade do pet em anos.
+      peso:
+        type: number
+        format: float
+        description: Peso do pet em quilogramas.
+      info_extra:
+        type: string
+        description: Informações extras sobre o pet.
+      user_id:
+        type: integer
+        format: int64
+        description: ID do proprietário do pet.
+      raca_id:
+        type: integer
+        format: int64
+        description: ID da raça do pet.
+    required:
+      - nome_pet
+      - user_id
+      - raca_id
+  CachorroWithBreed:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Cachorro'
+      - properties:
+          breed:
+            $ref: '#/definitions/Raca'
+            description: Detalhes completos da raça do cachorro.
