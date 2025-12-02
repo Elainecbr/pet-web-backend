@@ -54,7 +54,6 @@ Este é um projeto Full-Stack-básico desenvolvido, como uma Single Page Applica
 [ Link: O Wireframe gráfico simila a página](https://github-production-user-asset-6210df.s3.amazonaws.com/218513793/516668469-e8bd6e83-ac34-411a-bfeb-2472433f32b9.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251130T233219Z&X-Amz-Expires=300&X-Amz-Signature=fbfdc7d5efcbabab3fa62a9241293bdf4112d0dcf0d9c8e100bbcc1ad81bb11b&X-Amz-SignedHeaders=host)
 
 
-
 ## Tecnologias Utilizadas
 Backend em Python usando Flask e Flask-SQLAlchemy. Fornece endpoints para gerenciar usuários, raças e cachorros.
 
