@@ -20,7 +20,8 @@ O backend seguindo o padrão ensinado na disciplina Dev. Full Stack  Básico - P
 
 ## 📁 Estrutura
 
-O projeto anteriormente, eu não tinha modularizado, fiz as modificações, seguindo o padrão MVC (Model-View-Controller) ensinado na aula, organizando o código em módulos separados:
+O projeto anteriormente, eu não tinha modularizado, fiz as modificações, seguindo o padrão MVC (Model-View-Controller) ensinado na aula, 
+separei as responsabilidades dos módulos do projeto, organizando o código em módulos separados:
 
 ```
 pet-web-backend/
