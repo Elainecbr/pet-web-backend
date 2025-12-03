@@ -1,24 +1,24 @@
 # Pet Web - Full Stack SPA 
 
-# 🐶 Pet Web - O nosso Dogginho Care System 🐾 🐕
+# 🐶 Pet Web - O nosso Dogginho Care System 🐾 🐕 🐕‍🦺 🦮
 
 Bem-vindo ao Pet Web! Este sistema permite que você cadastre suas informações e as do seu cãozinho, recebendo dicas e cuidados personalizados baseados na raça, você pode visualizar as fotos respectivas da raça. As informações após o cadastro ou login serão amostradas nos cards abaixo do formulário. Além do cadastro e visualização, é possível também modificar ou deletar as informações. 
 
 
 # 🔮 Futuramente, poderá escolher as 
-> <span style="color:  #9543f9;"> 🥣 Rações,</span> <span style="color:magenta;"> 🧴 Produtos de Cuidados para o seu cão</span>, <span style="color:#70CC87;"> 🩺Veterinários na sua região,</span> <span style="color:#8A4C57">Forum -Dog-Book- para encontrar outros tutores que queiram socializar</span> e muito mais. 
+> <span style="color:  #9543f9;"> 🥣 Rações,</span> <span style="color:magenta;"> 🧴 Produtos de Cuidados para o seu cão</span>, <span style="color:#70CC87;"> 🩺Veterinários na sua região,</span> <span style="color:#8A4C57">Forum - 📖 Dog-Book - para encontrar outros tutores que queiram socializar</span> e muito mais. 
 
 
-## Estrutura Modularizada (Atualização Nov/2025)
+## Estrutura Modularizada 
 
-O backend foi **refatorado** seguindo o padrão ensinado na disciplina PUC:
+O backend seguindo o padrão ensinado na disciplina Dev.  Full Stack - PUC:
 - ✅ **`model/`** - Modelos separados (User, Raca, Cachorro)
 - ✅ **`schemas/`** - Schemas de validação Pydantic
 - ✅ **Organização MVC** - Código modular e escalável
 
 ## Pet Web - Estrutura Modularizada
 
-## 📁 Nova Estrutura de Pastas
+## 📁 Estrutura
 
 O projeto anteriormente, eu não tinha modularizado, fiz as modificações, seguindo o padrão MVC (Model-View-Controller) ensinado na aula, organizando o código em módulos separados:
 
