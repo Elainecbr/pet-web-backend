@@ -4,8 +4,9 @@
 
 Bem-vindo ao Pet Web! Este sistema permite que você cadastre suas informações e as do seu cãozinho, recebendo dicas e cuidados personalizados baseados na raça, você pode visualizar as fotos respectivas da raça. As informações após o cadastro ou login serão amostradas nos cards abaixo do formulário. Além do cadastro e visualização, é possível também modificar ou deletar as informações. 
 
+
 # 🔮 Futuramente, poderá escolher as 
-<span style="color: #9543f9;"> Rações,</span> <span style="color:magenta;">Produtos de Cuidados para o seu cão</span>, <span style="color:#70CC87;">Veterinários na sua região,</span> <span style="color:#8A4C57">Forum -Dog-Book- para encontrar outros tutores que queiram socializar</span> e muito mais. 
+> <span style="color:  #9543f9;"> 🥣 Rações,</span> <span style="color:magenta;"> 🧴 Produtos de Cuidados para o seu cão</span>, <span style="color:#70CC87;"> 🩺Veterinários na sua região,</span> <span style="color:#8A4C57">Forum -Dog-Book- para encontrar outros tutores que queiram socializar</span> e muito mais. 
 
 
 ## Estrutura Modularizada (Atualização Nov/2025)
