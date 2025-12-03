@@ -11,7 +11,7 @@ Bem-vindo ao Pet Web! Este sistema permite que você cadastre suas informações
 
 ## Estrutura Modularizada 
 
-O backend seguindo o padrão ensinado na disciplina Dev.  Full Stack - PUC:
+O backend seguindo o padrão ensinado na disciplina Dev. Full Stack  Básico - PUC:
 - ✅ **`model/`** - Modelos separados (User, Raca, Cachorro)
 - ✅ **`schemas/`** - Schemas de validação Pydantic
 - ✅ **Organização MVC** - Código modular e escalável
@@ -66,7 +66,7 @@ Backend em Python usando Flask e Flask-SQLAlchemy. Fornece endpoints para gerenc
     Pydantic: Validação de dados (modelos para requests/responses)
     SQLAlchemy (ORM)
     SQLite3: Banco de dados relacional leve
-    CORS (Cross-Origin Resource Sharing)
+    Flask-CORS (Cross-Origin Resource Sharing)
     
 ## Frontend:
 
@@ -80,7 +80,8 @@ Backend em Python usando Flask e Flask-SQLAlchemy. Fornece endpoints para gerenc
 ### Baixe ou clone o arquivo pet-web-backend.zip
  
 ## Pré-requisitos
-Certifique-se de ter o Python3 e o pip (gerenciador de pacotes do Python) instalados em seu sistema. O SQLite3 geralmente vem pré-instalado e com o Python no macOS.
+Certifique-se de ter o Python3 e o pip (gerenciador de pacotes do Python) instalados em seu sistema. 
+O SQLite3 geralmente vem pré-instalado e com o Python no macOS.
 
 # Backend — Projeto Pet
 
