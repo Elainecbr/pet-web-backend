@@ -105,45 +105,46 @@ O SQLite3 geralmente vem pré-instalado e com o python3 no macOS.
 ```
 ## Passo a Passo
 ### No Terminal - por exemplo do vs-code
+
+⇥ 1. Vá ao diretorio
 ```
-1. Vá ao diretorio
+ cd pet-web-backend/
+```
 
-⇥ cd pet-web-backend/
-
-2. Criar o ambiente virtual do projeto com nome venv
-
-⇥ python3 -m venv venv
-
-3. Para ativar o ambiente virtual:
-
-⇥  source venv/bin/activate  # Mac/Linux
-
-⇥  venv\Scripts\activate   # Windows
-
+⇥ 2. Criar o ambiente virtual do projeto com nome venv
+```
+ python3 -m venv venv
+```
+⇥ 3. Para ativar o ambiente virtual:
+```
+ source venv/bin/activate  # Mac/Linux
+```
+```
+ venv\Scripts\activate   # Windows
+```
 **💡 Dica:** Para confirmar que está no ambiente correto, o terminal deve mostrar `(venv)` no início da linha.
 
-4. Instalar dependências:
-
-⇥ pip install -r requirements.txt
-
+⇥ 4. Instalar dependências:
+```
+ pip install -r requirements.txt
+```
 
 ## Rodando localmente
 
-5. inicializa o banco (se necessário- se ainda não existe)
-
-⇥ python3 seed_db.py
-
-    - Este comando irá:
+⇥ 5. inicializa o banco (se necessário- se ainda não existe)
+```
+ python3 seed_db.py
+```
+    > Este comando irá:
       Criar a pasta instance/ (se não existir)
       Criar o banco site.db
       Insere 24 raças de cachorro
 
-6. rodar app
-
-
-⇥ python3 app.py
-
-
+⇥ 6. rodar app
+```
+ python3 app.py
+```
+```
 # A API ficará disponível em http://127.0.0.1:5000
 
 ```
@@ -151,7 +152,8 @@ O SQLite3 geralmente vem pré-instalado e com o python3 no macOS.
 - O banco é um arquivo SQLite em `/instance/site.db`
 - [Link da imagem](https://github.com/user-attachments/assets/8a186726-e2ee-459b-845a-6a458b49e1ec)
 
-<img width="916" height="744" alt="grafik" src="https://github.com/user-attachments/assets/8a186726-e2ee-459b-845a-6a458b49e1ec" />
+<img width="616" height="544" alt="grafik" src="https://github.com/user-attachments/assets/8a186726-e2ee-459b-845a-6a458b49e1ec" />
+<img width="564" height="453" alt="image" src="https://github.com/user-attachments/assets/862b9cf7-c4e9-4509-8322-17be0c0e70ee" />
 
 **Principais rotas para demonstração (4 exigidas pelo trabalho)**
 - `GET /racas` — lista todas as raças
