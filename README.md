@@ -5,8 +5,11 @@
 Bem-vindo ao Pet Web! Este sistema permite que você cadastre suas informações e as do seu cãozinho, recebendo dicas e cuidados personalizados baseados na raça, você pode visualizar as fotos respectivas da raça. As informações após o cadastro ou login serão amostradas nos cards abaixo do formulário. Além do cadastro e visualização, é possível também modificar ou deletar as informações. 
 
 
-# 🔮 Futuramente, poderá escolher as 
-> <span style="color:  #9543f9;"> 🥣 Rações,</span> <span style="color:magenta;"> 🧴 Produtos de Cuidados para o seu cão</span>, <span style="color:#70CC87;"> 🩺Veterinários na sua região,</span> <span style="color:#8A4C57">Forum - 📖 Dog-Book - para encontrar outros tutores que queiram socializar</span> e muito mais. 
+
+# ⚙️ Futuramente, poderá ser escolhido: 
+
+> <span style="color:  #9543f9;"> 🥣 Diferentes tipos de Rações,</span> <span style="color:magenta;"> 🧴 Produtos de Cuidados para o seu cão</span>, <span style="color:#70CC87;"> 🩺 Veterinários na sua região,</span> <span style="color:#8A4C57">Forum - 📖 Dog-Book - para encontrar outros tutores que queiram socializar</span> e muito mais.
+> > Futuramente será possivel Monetização de Conteúdo - converter o tráfego ou o conteúdo online em receita, (marketing de afiliados, publicidade direta, conteúdo patrocinado e outras estratégias).
 
 
 ## Estrutura Modularizada 
@@ -49,9 +52,9 @@ pet-web-backend/
 
 ```
 
-# Projeto
+# 🐶 Projeto
 
-Este é um projeto Full-Stack-básico desenvolvido, como uma Single Page Application (SPA) para o "Pet Web", conforme o wireframe gráfico do projeto. O objetivo é demonstrar a integração de um backend em Python (Flask) com um frontend interativo (HTML, CSS, JavaScript), utilizando Pydantic para validação de dados e Flask-OpenAPI3 para documentação de API (Swagger UI). Seguindo os "requisitos para o MVP.pdf"
+Este é um projeto Full-Stack, básico, desenvolvido, como uma Single Page Application (SPA) para o "Pet Web", conforme o wireframe gráfico do projeto. O objetivo é demonstrar a integração de um backend em Python (Flask) com um frontend interativo (HTML, CSS, JavaScript), utilizando Pydantic para validação de dados e Flask-OpenAPI3 para documentação de API (Swagger UI). Seguindo os "requisitos para o MVP.pdf"
 
 [ Link: O Wireframe gráfico simila a página](https://github-production-user-asset-6210df.s3.amazonaws.com/218513793/516668469-e8bd6e83-ac34-411a-bfeb-2472433f32b9.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251130T233219Z&X-Amz-Expires=300&X-Amz-Signature=fbfdc7d5efcbabab3fa62a9241293bdf4112d0dcf0d9c8e100bbcc1ad81bb11b&X-Amz-SignedHeaders=host)
 
@@ -78,57 +81,69 @@ Backend em Python usando Flask e Flask-SQLAlchemy. Fornece endpoints para gerenc
 
 # Pet Web — Backend (API)
 
-### Baixe ou clone o arquivo pet-web-backend.zip
+## Baixe ou clone o arquivo pet-web-backend.zip
  
-## Pré-requisitos
-Certifique-se de ter o Python3 e o pip (gerenciador de pacotes do Python) instalados em seu sistema. 
-O SQLite3 geralmente vem pré-instalado e com o Python no macOS.
+### Pré-requisitos
+Certifique-se de ter o python, ou python3 e o pip (gerenciador de pacotes do Python) instalados em seu sistema. 
+O SQLite3 geralmente vem pré-instalado e com o python3 no macOS.
 
 # Backend — Projeto Pet
 
 ## Este diretório contém a API em Flask usada pelo Projeto Pet.
 
-### Requisitos - siga os passo
+### Requisitos - siga os passos -
+```diff
 - Crie um ambiente virtual (recomendado)
-- Python 3.8+
-- Instale dependências:
+- Python 3.8+ (no mac,  para usar/exucar o Python, python3 [option]  | file , ex. python3 app.py)
+- Instale dependências
 
-!IMPORTANTE:! Antes de iniciar o servidor, execute:
-> ```
+!IMPORTANTE:! Antes de iniciar o servidor (python3 app.py), execute:
 > python seed_db.py
-> ```
 > Este comando popula o banco com 24 raças de cachorro necessárias para o funcionamento do sistema.
+> Siga o passo a passo abaixo
 
 ```
-no Terminal - por exemplo do vs-code
+## Passo a Passo
+### No Terminal - por exemplo do vs-code
+```
+1. Vá ao diretorio
 
-cd pet-web-backend/
-# Criar O ambiente virtual do projeto com nome venv
-python3 -m venv venv
+⇥ cd pet-web-backend/
 
-# Para ativar o ambiente virtual:
+2. Criar o ambiente virtual do projeto com nome venv
 
-- source venv/bin/activate  # Mac/Linux
-- venv\Scripts\activate   # Windows
-- 
+⇥ python3 -m venv venv
+
+3. Para ativar o ambiente virtual:
+
+⇥  source venv/bin/activate  # Mac/Linux
+
+⇥  venv\Scripts\activate   # Windows
+
 **💡 Dica:** Para confirmar que está no ambiente correto, o terminal deve mostrar `(venv)` no início da linha.
 
-# Instalar dependências:
-pip install -r requirements.txt
-```
+4. Instalar dependências:
+
+⇥ pip install -r requirements.txt
+
 
 ## Rodando localmente
 
-```No Terminal
-1. cd pet-web-backend/
-# inicializa o banco (se necessário- se ainda não existe)
-2. python seed_db.py 
+5. inicializa o banco (se necessário- se ainda não existe)
+
+⇥ python3 seed_db.py
+
     - Este comando irá:
       Criar a pasta instance/ (se não existir)
       Criar o banco site.db
       Insere 24 raças de cachorro
-# rodar app
-3. python app.py
+
+6. rodar app
+
+
+⇥ python3 app.py
+
+
 # A API ficará disponível em http://127.0.0.1:5000
 
 ```
