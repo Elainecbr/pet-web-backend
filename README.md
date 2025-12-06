@@ -108,7 +108,7 @@ O SQLite3 geralmente vem pré-instalado e com o python3 no macOS.
 
 ⇥ 1. Vá ao diretorio
 ```
- cd pet-web-backend/
+ cd pet-web-backend/ (se foi baixado como aqrquivo .zip -> poderá ser o diretorio pet-web-frontend-main/)
 ```
 
 ⇥ 2. Criar o ambiente virtual do projeto com nome venv
