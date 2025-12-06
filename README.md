@@ -181,7 +181,6 @@ python3 app.py
 - O banco é um arquivo SQLite em `/instance/site.db`
 - [Link da imagem](https://github.com/user-attachments/assets/8a186726-e2ee-459b-845a-6a458b49e1ec)
 
-<img width="616" height="544" alt="grafik" src="https://github.com/user-attachments/assets/8a186726-e2ee-459b-845a-6a458b49e1ec" />
 <img width="564" height="453" alt="image" src="https://github.com/user-attachments/assets/862b9cf7-c4e9-4509-8322-17be0c0e70ee" />
 
 **Principais rotas para demonstração (4 exigidas pelo trabalho)**
