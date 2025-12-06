@@ -115,7 +115,7 @@ O SQLite3 geralmente vem pré-instalado e com o python3 no macOS.
 
 ⇥ 1. Vá ao diretorio
 ```
- cd backend/ (renomeie as pastas para "backend" e "frontend" apos o downloadou clone)
+ cd backend/ (renomeie as pastas para "backend" e "frontend" apos o download ou clone)
 ```
 
 ⇥ 2. Criar o ambiente virtual do projeto com nome venv
