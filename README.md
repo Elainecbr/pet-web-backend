@@ -160,7 +160,7 @@ O SQLite3 geralmente vem pré-instalado e com o python3 no macOS.
 
 ```
 
-## ⚠️ Solução de Problemas - Erro de Permissão ao Gravar Dados - se os diretórios não permitem escrita
+## Se existir - Erro de Permissão ao Gravar Dados ⚠️ Solução de Problemas - se os diretórios não permitem escrita
 
 Se você receber erros de JSON (, , ,) ou erro de permissão ao tentar cadastrar dados, é necessário ajustar as permissões de direto de escrita da pasta `instance/`:
 
