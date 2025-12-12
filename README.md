@@ -35,7 +35,8 @@ backend/
 ├── README.md              ✅ Instruções
 ├── .gitignore             ✅ Proteção - arquivos que devem ser ignorados pelo git
 ├── model/                 ✅ Modelos
-│   ├── __init__.py         # inicializador de pacote - Inicializa DB e expõe os modelos - (Propósito: Define um diretório como um pacote Python)
+│   ├── __init__.py         # inicializador de pacote -Inicializa DB e expõe os modelos- (Propósito: Define um diretório
+│   │                                                                                     como um pacote Python)
 │   ├── base.py             # Base do SQLAlchemy
 │   ├── user.py             # Modelo User
 │   ├── raca.py             # Modelo Raca
@@ -159,9 +160,9 @@ O SQLite3 geralmente vem pré-instalado e com o python3 no macOS.
 
 ```
 
-## ⚠️ Solução de Problemas - Erro de Permissão ao Gravar Dados
+## ⚠️ Solução de Problemas - Erro de Permissão ao Gravar Dados - se os diretórios não permitem escrita
 
-Se você receber erros de JSON (, , ,) ou erro de permissão ao tentar cadastrar dados, é necessário ajustar as permissões da pasta `instance/`:
+Se você receber erros de JSON (, , ,) ou erro de permissão ao tentar cadastrar dados, é necessário ajustar as permissões de direto de escrita da pasta `instance/`:
 
 ```bash
 # Dar permissão de escrita na pasta instance
@@ -183,6 +184,14 @@ python3 app.py
 ## Banco de Dados
 - O banco é um arquivo SQLite em `/instance/site.db`
 - [Link da imagem](https://github.com/user-attachments/assets/8a186726-e2ee-459b-845a-6a458b49e1ec)
+
+  ## Para carregar dados para teste -
+  > No banco, as tabelas usuários, e cachorro, são para cadastro através dos formulários (via POST), vem a principio vazias, mas com os seguintes
+  > comandos se pode carregar dados de teste que estão disponíveis n repositório:
+  > ### Para carregar os dados de usuários:
+     > sqlite3 instance/site.db < user.sql
+  > ### Para carregar os dados de cachorros:
+     > sqlite3 instance/site.db < cachorro.sql
 
 <img width="564" height="453" alt="image" src="https://github.com/user-attachments/assets/862b9cf7-c4e9-4509-8322-17be0c0e70ee" />
 
