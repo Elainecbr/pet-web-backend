@@ -184,6 +184,10 @@ python3 app.py
 ## Banco de Dados
 - O banco é um arquivo SQLite em `/instance/site.db`
 - [Link da imagem](https://github.com/user-attachments/assets/8a186726-e2ee-459b-845a-6a458b49e1ec)
+ 
+<img width="564" height="453" alt="image" src="https://github.com/user-attachments/assets/862b9cf7-c4e9-4509-8322-17be0c0e70ee" />
+  <img width="1202" height="196" alt="image" src="https://github.com/user-attachments/assets/44d34dca-bbd4-4f41-af5d-3b4d3130f923" />
+
 
   ## Para carregar dados para teste já relacionados 
   > No banco, as tabelas usuários, e cachorro, são para cadastro através dos formulários (via POST), vem a principio vazias, mas com os seguintes
@@ -193,7 +197,6 @@ python3 app.py
   > ### Para carregar os dados de cachorros:
      > sqlite3 instance/site.db < cachorro.sql
 
-<img width="564" height="453" alt="image" src="https://github.com/user-attachments/assets/862b9cf7-c4e9-4509-8322-17be0c0e70ee" />
 
 # Documentação OpenAPI/Swagger
 - Acesse a UI Swagger em: `http://127.0.0.1:5000/swagger`
