@@ -56,7 +56,9 @@ backend/
 
 Este é um projeto Full-Stack, básico, desenvolvido, como uma Single Page Application (SPA) para o "Pet Web", conforme o wireframe gráfico do projeto. O objetivo é demonstrar a integração de um backend em Python (Flask) com um frontend interativo (HTML, CSS, JavaScript), utilizando Pydantic para validação de dados e Flask-OpenAPI3 para documentação de API (Swagger UI). Seguindo os "requisitos para o MVP.pdf"
 
-[ Link: O Wireframe gráfico simila a página]([https://github-production-user-asset-6210df.s3.amazonaws.com/218513793/516668469-e8bd6e83-ac34-411a-bfeb-2472433f32b9.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251130%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251130T233219Z&X-Amz-Expires=300&X-Amz-Signature=fbfdc7d5efcbabab3fa62a9241293bdf4112d0dcf0d9c8e100bbcc1ad81bb11b&X-Amz-SignedHeaders=host](https://github.com/user-attachments/assets/222aa8f9-9262-4d1f-ad27-a35acae0f414))
+[ Link: O Wireframe gráfico simila a página](https://github.com/user-attachments/assets/222aa8f9-9262-4d1f-ad27-a35acae0f414)
+
+
 <img width="1382" height="769" alt="image" src="https://github.com/user-attachments/assets/222aa8f9-9262-4d1f-ad27-a35acae0f414" />
 
 
