@@ -4,7 +4,17 @@
 
 Bem-vindo ao Pet Web! Este sistema permite que você cadastre suas informações e as do seu cãozinho, recebendo dicas e cuidados personalizados baseados na raça, você pode visualizar as fotos respectivas da raça. As informações após o cadastro ou login serão amostradas nos cards abaixo do formulário. Além do cadastro e visualização, é possível também modificar ou deletar as informações. 
 
+_**Welcome to Pet Web!**
 
+This system allows users to register their own information as well as their dog’s information, receiving personalized tips and care recommendations based on the dog’s breed. Users can also view photos related to each breed.
+
+After registration or login, the submitted information is displayed in cards below the form. In addition to registering and viewing data, users can also update or delete their information._
+
+_**Willkommen bei Pet Web!**
+
+Dieses System ermöglicht es Benutzerinnen und Benutzern, ihre eigenen Informationen sowie die Informationen ihres Hundes zu registrieren und personalisierte Tipps und Pflegehinweise basierend auf der Hunderasse zu erhalten. Außerdem können passende Fotos der jeweiligen Rasse angezeigt werden.
+
+Nach der Registrierung oder Anmeldung werden die eingegebenen Informationen in Karten unterhalb des Formulars angezeigt. Neben dem Registrieren und Anzeigen der Daten ist es auch möglich, die Informationen zu bearbeiten oder zu löschen._
 
 # ⚙️ Futuramente, poderá ser escolhido: 
 
