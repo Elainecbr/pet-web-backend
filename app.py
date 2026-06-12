@@ -14,11 +14,16 @@ em modo desenvolvimento: `python app.py` (ele cria o DB em `instance/site.db`).
 """
 
 import os
+import requests as http_requests
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from model import db, User, Raca, Cachorro, init_database
 from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
+
+# Chave da TheDogAPI lida do ambiente — nunca hardcoded no código.
+DOG_API_KEY = os.getenv('DOG_API_KEY', '')
+DOG_API_BREEDS_URL = 'https://api.thedogapi.com/v1/breeds'
 
 # --- Configuração do Flask App e SQLAlchemy ---
 def create_app():
@@ -81,12 +86,46 @@ def create_app():
     # --- Rotas da API ---
 
     # Rota GET para buscar todas as raças de cachorro
+    # Se DOG_API_KEY estiver definida, enriquece cada raça com a foto real da TheDogAPI.
     @app.route('/racas', methods=['GET'])
     def get_racas():
-        # Consulta todas as raças no banco de dados
         racas = Raca.query.all()
-        # Converte a lista de objetos Raca para uma lista de dicionários e retorna como JSON
-        return jsonify([raca.to_dict() for raca in racas])
+        resultado = [r.to_dict() for r in racas]
+
+        if DOG_API_KEY:
+            try:
+                resp = http_requests.get(
+                    DOG_API_BREEDS_URL,
+                    headers={'x-api-key': DOG_API_KEY},
+                    timeout=5
+                )
+                if resp.ok:
+                    dog_breeds = resp.json()  # lista completa de raças da TheDogAPI
+                    # Cria mapa nome_normalizado -> url_imagem
+                    img_map = {}
+                    for b in dog_breeds:
+                        nome_norm = b.get('name', '').lower()
+                        img = b.get('image', {}).get('url')
+                        if img:
+                            img_map[nome_norm] = img
+
+                    # Substitui a imagem local pela foto real quando existir
+                    for raca_dict in resultado:
+                        nome_norm = raca_dict['nome'].lower()
+                        # Tenta correspondência exata ou parcial
+                        img_url = img_map.get(nome_norm)
+                        if not img_url:
+                            # Busca parcial: verifica se algum nome da API contém o nome local
+                            for api_nome, api_img in img_map.items():
+                                if nome_norm in api_nome or api_nome in nome_norm:
+                                    img_url = api_img
+                                    break
+                        if img_url:
+                            raca_dict['imagem_api'] = img_url
+            except Exception:
+                pass  # Se a API externa falhar, usa apenas os dados do banco local
+
+        return jsonify(resultado)
 
     # Rota GET para buscar uma raça específica pelo nome
     # O nome da raça é passado como parte da URL (ex: /racas/Bulldog-Frances)
@@ -367,6 +406,153 @@ def create_app():
         user.telefone = data.get('telefone', user.telefone)
         db.session.commit()
         return jsonify(user.to_dict())
+
+    # ---------------------------------------------------------------------------
+    # Rota POST /saude/sintomas
+    # Recebe sintomas e opcionalmente uma raca_id, e retorna recomendações de
+    # cuidados e alertas baseados nas informações da raça cadastrada no banco.
+    # ---------------------------------------------------------------------------
+    @app.route('/saude/sintomas', methods=['POST'])
+    def consulta_saude():
+        """Consulta de saúde com base em sintomas descritos pelo tutor.
+
+        Payload esperado (JSON):
+            {
+                "sintomas": "letargia, sem apetite, vômito",
+                "raca_id": 3          # opcional
+            }
+
+        Resposta 200:
+            {
+                "alerta": "⚠️ Sintomas como vômito e letargia podem indicar...",
+                "recomendacoes": ["Leve ao veterinário em até 24h", ...],
+                "cuidados_da_raca": "...",   # se raca_id informado
+                "raca": "Labrador Retriever"  # se raca_id informado
+            }
+        """
+        data = request.get_json() or {}
+        sintomas_raw = data.get('sintomas', '').strip().lower()
+
+        if not sintomas_raw:
+            return jsonify({"message": "Informe os sintomas do seu pet."}), 400
+
+        # ------------------------------------------------------------------
+        # Tabela de triagem por palavras-chave nos sintomas
+        # Cada entrada: (palavras-chave, nível de urgência, recomendações)
+        # ------------------------------------------------------------------
+        TRIAGEM = [
+            (
+                ['convuls', 'desmaiou', 'desmaio', 'paralisia', 'paralisi', 'inconsci'],
+                'urgente',
+                [
+                    '🚨 URGENTE: Leve imediatamente ao veterinário ou emergência animal.',
+                    'Não tente forçar o animal a se mover.',
+                    'Mantenha-o aquecido e em local seguro durante o transporte.',
+                ]
+            ),
+            (
+                ['vomit', 'vômit', 'diarr', 'sangue', 'fezes com sangue', 'urina com sangue'],
+                'atenção',
+                [
+                    '⚠️ Leve ao veterinário em até 24 horas.',
+                    'Ofereça água limpa em pequenas quantidades para evitar desidratação.',
+                    'Evite alimentá-lo até a consulta para não agravar o quadro.',
+                    'Observe se os sintomas pioram — se sim, vá imediatamente.',
+                ]
+            ),
+            (
+                ['letargi', 'apático', 'apatia', 'sem apetit', 'não quer comer', 'nao quer comer'],
+                'observação',
+                [
+                    '👀 Monitore por 24–48 horas.',
+                    'Verifique se há febre tocando o focinho (seco e quente pode indicar febre).',
+                    'Ofereça água fresca e alimento palatável.',
+                    'Se persistir por mais de 48 horas, consulte um veterinário.',
+                ]
+            ),
+            (
+                ['coçando', 'cocando', 'coça', 'coça muito', 'alergi', 'vermelhidão', 'vermelhidao', 'mancha'],
+                'observação',
+                [
+                    '👀 Pode ser alergia alimentar, ambiental ou parasita externo (pulga, carrapato).',
+                    'Verifique a pelagem por parasitas.',
+                    'Evite trocar a ração de forma abrupta.',
+                    'Consulte um veterinário se a coceira for intensa ou houver feridas.',
+                ]
+            ),
+            (
+                ['tosse', 'espirro', 'espirrando', 'coriza', 'nariz escorrendo', 'respiração difícil', 'respiracao dificil'],
+                'atenção',
+                [
+                    '⚠️ Pode indicar infecção respiratória ou traqueobronquite (tosse do canil).',
+                    'Mantenha o animal em local arejado e aquecido.',
+                    'Evite passeios em locais com outros cães até a consulta.',
+                    'Leve ao veterinário se a tosse durar mais de 2 dias ou houver dificuldade respiratória.',
+                ]
+            ),
+            (
+                ['mancando', 'manca', 'dor na pata', 'pata inchada', 'não apoia', 'nao apoia'],
+                'observação',
+                [
+                    '👀 Inspecione a pata por espinhos, cortes ou inchaço.',
+                    'Evite caminhadas longas até identificar a causa.',
+                    'Se houver inchaço visível ou dor intensa, consulte um veterinário.',
+                ]
+            ),
+            (
+                ['olho', 'olhos', 'secreção ocular', 'secrecao ocular', 'olho vermelho', 'lacrimejando'],
+                'observação',
+                [
+                    '👀 Pode ser conjuntivite ou corpo estranho no olho.',
+                    'Não aplique colírio humano sem orientação veterinária.',
+                    'Leve ao veterinário se a secreção for amarelada ou o olho estiver fechado.',
+                ]
+            ),
+        ]
+
+        recomendacoes = []
+        nivel = 'geral'
+        alerta = ''
+
+        for palavras, nivel_triagem, recs in TRIAGEM:
+            if any(p in sintomas_raw for p in palavras):
+                recomendacoes = recs
+                nivel = nivel_triagem
+                break
+
+        # Recomendação genérica se nenhuma palavra-chave bater
+        if not recomendacoes:
+            recomendacoes = [
+                'Observe o comportamento do animal nas próximas 24 horas.',
+                'Certifique-se de que ele está bem hidratado.',
+                'Em caso de dúvida, sempre consulte um veterinário.',
+            ]
+            alerta = 'ℹ️ Não identificamos sintomas críticos nas informações fornecidas. Monitore seu pet.'
+        else:
+            if nivel == 'urgente':
+                alerta = '🚨 URGENTE — Procure atendimento veterinário imediatamente!'
+            elif nivel == 'atenção':
+                alerta = '⚠️ Atenção — Recomendamos consulta veterinária em breve.'
+            else:
+                alerta = '👀 Monitorar — Observe o pet e consulte o veterinário se piorar.'
+
+        resposta = {
+            'alerta': alerta,
+            'nivel': nivel,
+            'recomendacoes': recomendacoes,
+            'sintomas_recebidos': sintomas_raw,
+        }
+
+        # Se raca_id informado, enriquece a resposta com os cuidados da raça
+        raca_id = data.get('raca_id')
+        if raca_id:
+            raca = Raca.query.get(raca_id)
+            if raca:
+                resposta['raca'] = raca.nome
+                resposta['cuidados_da_raca'] = raca.cuidados or 'Nenhum cuidado específico cadastrado para esta raça.'
+                resposta['comportamento'] = raca.comportamento or ''
+
+        return jsonify(resposta), 200
 
     # Rota GET para buscar todos os usuários (útil para debug ou admin, mas não essencial no frontend MVP)
     @app.route('/usuarios', methods=['GET'])
