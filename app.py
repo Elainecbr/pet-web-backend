@@ -586,8 +586,7 @@ if __name__ == '__main__':
     # Execução direta do script (útil em desenvolvimento/local):
     app = create_app() # Cria a instância do aplicativo (já inicializa o banco via init_database)
     
-    # Inicia o servidor Flask. 'debug=True' é útil em desenvolvimento.
-    # Quando iniciamos o processo em background (nohup) o reloader pode tentar
-    # acessar descriptors de terminal e causar erros (termios). Desativamos o
-    # reloader para execução em background local segura.
-    app.run(debug=True, use_reloader=False, port=5000)
+    # host='0.0.0.0' é obrigatório no Render para que o serviço seja detectado.
+    # PORT é injetado pelo Render; cai para 5000 em desenvolvimento local.
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
