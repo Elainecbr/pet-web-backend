@@ -20,6 +20,7 @@ from flask_cors import CORS
 from model import db, User, Raca, Cachorro, init_database
 from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
+from sqlalchemy import inspect, text
 
 # Chave da TheDogAPI lida do ambiente — nunca hardcoded no código.
 DOG_API_KEY = os.getenv('DOG_API_KEY', '')
@@ -47,6 +48,16 @@ def create_app():
     
     # Inicializa o SQLAlchemy e cria as tabelas do banco de dados
     init_database(app)
+
+    # Migração leve para ambientes já existentes: adiciona coluna de senha
+    # se o banco tiver sido criado antes deste requisito de autenticação.
+    with app.app_context():
+        user_columns = [c['name'] for c in inspect(db.engine).get_columns('user')]
+        if 'senha_hash' not in user_columns:
+            db.session.execute(
+                text("ALTER TABLE user ADD COLUMN senha_hash VARCHAR(255) NOT NULL DEFAULT ''")
+            )
+            db.session.commit()
 
     # Habilita o CORS (Cross-Origin Resource Sharing) para todas as rotas.
     # Isso é essencial para permitir que o Frontend (rodando em um domínio/porta diferente)
@@ -148,8 +159,9 @@ def create_app():
 
         Payload esperado (JSON):
             {
-                "nome_completo": "Nome do usuário",
+                "nome_completo": "Nome de usuário",
                 "email": "usuario@example.com",
+                "senha": "senha_em_texto_plano",
                 "telefone": "(XX) XXXXX-XXXX"  # opcional
             }
 
@@ -161,23 +173,73 @@ def create_app():
 
         data = request.get_json()  # Pega os dados JSON enviados no corpo da requisição
 
-        # Validação básica: verifica se os campos 'nome_completo' e 'email' estão presentes
-        if not data or not all(key in data for key in ['nome_completo', 'email']):
+        nome = (data or {}).get('nome_completo', '').strip()
+        email = (data or {}).get('email', '').strip().lower()
+        senha = (data or {}).get('senha', '').strip()
+
+        # Validação básica: campos obrigatórios para autenticação
+        if not nome or not email or not senha:
             return jsonify({"message": "Dados incompletos para cadastro de usuário."}), 400 # 400 (Bad Request)
 
         # Verifica se o email já existe no banco de dados para evitar duplicatas
-        if User.query.filter_by(email=data['email']).first():
+        if User.query.filter_by(email=email).first():
             return jsonify({"message": "Este e-mail já está cadastrado."}), 409 # 409 (Conflict)
 
         # Cria um novo objeto User com os dados recebidos
         new_user = User(
-            nome_completo=data['nome_completo'],
-            email=data['email'],
+            nome_completo=nome,
+            email=email,
             telefone=data.get('telefone') # .get() permite que 'telefone' seja opcional
         )
+        new_user.set_password(senha)
         db.session.add(new_user) # Adiciona o novo usuário à sessão do banco
         db.session.commit() # Salva as mudanças permanentemente
         return jsonify(new_user.to_dict()), 201 # Retorna o usuário criado e 201 (Created)
+
+    # Rota POST para login simplificado (nome + e-mail + senha)
+    @app.route('/auth/login', methods=['POST'])
+    def auth_login():
+        """Autentica usuário usando nome de usuário, e-mail e senha.
+
+        Payload esperado (JSON):
+            {
+                "nome_completo": "Nome de usuário",
+                "email": "usuario@example.com",
+                "senha": "senha_em_texto_plano"
+            }
+
+        Respostas:
+            200: usuário autenticado
+            400: dados incompletos
+            401: credenciais inválidas
+            404: usuário não encontrado
+        """
+
+        data = request.get_json() or {}
+        nome = data.get('nome_completo', '').strip()
+        email = data.get('email', '').strip().lower()
+        senha = data.get('senha', '').strip()
+
+        if not nome or not email or not senha:
+            return jsonify({"message": "Informe nome de usuário, e-mail e senha."}), 400
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({"message": "Usuário não encontrado."}), 404
+
+        if user.nome_completo.strip().lower() != nome.lower():
+            return jsonify({"message": "Nome de usuário não confere com o e-mail informado."}), 401
+
+        # Compatibilidade com usuários legados sem senha cadastrada.
+        if not user.senha_hash:
+            user.set_password(senha)
+            db.session.commit()
+            return jsonify(user.to_dict()), 200
+
+        if not user.check_password(senha):
+            return jsonify({"message": "Senha incorreta."}), 401
+
+        return jsonify(user.to_dict()), 200
 
     # Rota GET para buscar um usuário específico pelo e-mail
     @app.route('/usuarios/email/<string:email>', methods=['GET'])
@@ -402,8 +464,17 @@ def create_app():
             return jsonify({"message": "Usuário não encontrado."}), 404
         data = request.get_json() or {}
         user.nome_completo = data.get('nome_completo', user.nome_completo)
-        user.email = data.get('email', user.email)
+        if 'email' in data:
+            novo_email = (data.get('email') or '').strip().lower()
+            if novo_email and novo_email != user.email:
+                existing_user = User.query.filter_by(email=novo_email).first()
+                if existing_user and existing_user.id != user.id:
+                    return jsonify({"message": "Este e-mail já está cadastrado."}), 409
+                user.email = novo_email
         user.telefone = data.get('telefone', user.telefone)
+        nova_senha = (data.get('senha') or '').strip()
+        if nova_senha:
+            user.set_password(nova_senha)
         db.session.commit()
         return jsonify(user.to_dict())
 

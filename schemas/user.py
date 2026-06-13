@@ -5,6 +5,7 @@ class UserSchema(BaseModel):
     """Schema para criar um novo usuário"""
     nome_completo: str
     email: str
+    senha: str
     telefone: Optional[str] = None
 
 class UserViewSchema(BaseModel):
