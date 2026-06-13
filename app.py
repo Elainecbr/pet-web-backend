@@ -20,6 +20,7 @@ from flask_cors import CORS
 from model import db, User, Raca, Cachorro, init_database
 from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
+from sqlalchemy import inspect, text
 
 # Chave da TheDogAPI lida do ambiente — nunca hardcoded no código.
 DOG_API_KEY = os.getenv('DOG_API_KEY', '')
@@ -47,6 +48,16 @@ def create_app():
     
     # Inicializa o SQLAlchemy e cria as tabelas do banco de dados
     init_database(app)
+
+    # Migração leve para ambientes já existentes: adiciona coluna de senha
+    # se o banco tiver sido criado antes deste requisito de autenticação.
+    with app.app_context():
+        user_columns = [c['name'] for c in inspect(db.engine).get_columns('user')]
+        if 'senha_hash' not in user_columns:
+            db.session.execute(
+                text("ALTER TABLE user ADD COLUMN senha_hash VARCHAR(255) NOT NULL DEFAULT ''")
+            )
+            db.session.commit()
 
     # Habilita o CORS (Cross-Origin Resource Sharing) para todas as rotas.
     # Isso é essencial para permitir que o Frontend (rodando em um domínio/porta diferente)
@@ -78,6 +89,36 @@ def create_app():
     @app.route('/swagger.yaml')
     def swagger_yaml():
         return send_from_directory(basedir, 'swagger.yaml')
+
+    def _get_request_user_id():
+        """Lê o usuário autenticado via header X-User-Id.
+
+        Retorna:
+            int: id do usuário autenticado
+            None: header ausente
+            -1: header inválido
+        """
+
+        raw = (request.headers.get('X-User-Id') or '').strip()
+        if not raw:
+            return None
+        try:
+            user_id = int(raw)
+            return user_id if user_id > 0 else -1
+        except ValueError:
+            return -1
+
+    def _require_self(target_user_id):
+        """Garante que o usuário autenticado só acesse o próprio recurso."""
+
+        requester_user_id = _get_request_user_id()
+        if requester_user_id is None:
+            return jsonify({"message": "Autenticação ausente. Faça login novamente."}), 401
+        if requester_user_id == -1:
+            return jsonify({"message": "Header X-User-Id inválido."}), 400
+        if requester_user_id != target_user_id:
+            return jsonify({"message": "Acesso negado: você só pode acessar seus próprios dados."}), 403
+        return None
 
     # Nota: a rota que serve o frontend (catch-all) foi movida para o final
     # da função `create_app()` para evitar sobrescrever as rotas da API.
@@ -148,8 +189,9 @@ def create_app():
 
         Payload esperado (JSON):
             {
-                "nome_completo": "Nome do usuário",
+                "nome_completo": "Nome de usuário",
                 "email": "usuario@example.com",
+                "senha": "senha_em_texto_plano",
                 "telefone": "(XX) XXXXX-XXXX"  # opcional
             }
 
@@ -161,23 +203,73 @@ def create_app():
 
         data = request.get_json()  # Pega os dados JSON enviados no corpo da requisição
 
-        # Validação básica: verifica se os campos 'nome_completo' e 'email' estão presentes
-        if not data or not all(key in data for key in ['nome_completo', 'email']):
+        nome = (data or {}).get('nome_completo', '').strip()
+        email = (data or {}).get('email', '').strip().lower()
+        senha = (data or {}).get('senha', '').strip()
+
+        # Validação básica: campos obrigatórios para autenticação
+        if not nome or not email or not senha:
             return jsonify({"message": "Dados incompletos para cadastro de usuário."}), 400 # 400 (Bad Request)
 
         # Verifica se o email já existe no banco de dados para evitar duplicatas
-        if User.query.filter_by(email=data['email']).first():
+        if User.query.filter_by(email=email).first():
             return jsonify({"message": "Este e-mail já está cadastrado."}), 409 # 409 (Conflict)
 
         # Cria um novo objeto User com os dados recebidos
         new_user = User(
-            nome_completo=data['nome_completo'],
-            email=data['email'],
+            nome_completo=nome,
+            email=email,
             telefone=data.get('telefone') # .get() permite que 'telefone' seja opcional
         )
+        new_user.set_password(senha)
         db.session.add(new_user) # Adiciona o novo usuário à sessão do banco
         db.session.commit() # Salva as mudanças permanentemente
         return jsonify(new_user.to_dict()), 201 # Retorna o usuário criado e 201 (Created)
+
+    # Rota POST para login simplificado (nome + e-mail + senha)
+    @app.route('/auth/login', methods=['POST'])
+    def auth_login():
+        """Autentica usuário usando nome de usuário, e-mail e senha.
+
+        Payload esperado (JSON):
+            {
+                "nome_completo": "Nome de usuário",
+                "email": "usuario@example.com",
+                "senha": "senha_em_texto_plano"
+            }
+
+        Respostas:
+            200: usuário autenticado
+            400: dados incompletos
+            401: credenciais inválidas
+            404: usuário não encontrado
+        """
+
+        data = request.get_json() or {}
+        nome = data.get('nome_completo', '').strip()
+        email = data.get('email', '').strip().lower()
+        senha = data.get('senha', '').strip()
+
+        if not nome or not email or not senha:
+            return jsonify({"message": "Informe nome de usuário, e-mail e senha."}), 400
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({"message": "Usuário não encontrado."}), 404
+
+        if user.nome_completo.strip().lower() != nome.lower():
+            return jsonify({"message": "Nome de usuário não confere com o e-mail informado."}), 401
+
+        # Compatibilidade com usuários legados sem senha cadastrada.
+        if not user.senha_hash:
+            user.set_password(senha)
+            db.session.commit()
+            return jsonify(user.to_dict()), 200
+
+        if not user.check_password(senha):
+            return jsonify({"message": "Senha incorreta."}), 401
+
+        return jsonify(user.to_dict()), 200
 
     # Rota GET para buscar um usuário específico pelo e-mail
     @app.route('/usuarios/email/<string:email>', methods=['GET'])
@@ -222,6 +314,10 @@ def create_app():
         if not data or not all(key in data for key in ['nome_pet', 'user_id', 'raca_id']):
             return jsonify({"message": "Dados incompletos para cadastro de cachorro."}), 400
 
+        auth_error = _require_self(data['user_id'])
+        if auth_error:
+            return auth_error
+
         # Verifica se o usuário e a raça (pelos IDs) existem no banco de dados
         user = User.query.get(data['user_id']) # Busca o usuário pelo ID
         raca = Raca.query.get(data['raca_id']) # Busca a raça pelo ID
@@ -263,6 +359,10 @@ def create_app():
         Responde 200 com uma lista de `CachorroWithBreed` ou 404 se o usuário não existir.
         """
 
+        auth_error = _require_self(user_id)
+        if auth_error:
+            return auth_error
+
         user = User.query.get(user_id)
         if not user:
             return jsonify({"message": "Usuário não encontrado."}), 404
@@ -280,6 +380,10 @@ def create_app():
         Uso: GET /usuarios/{user_id}/cachorros/{nome_pet}
         Nota: o `nome_pet` deve ser exatamente igual ao cadastrado (case-sensitive).
         """
+
+        auth_error = _require_self(user_id)
+        if auth_error:
+            return auth_error
 
         user = User.query.get(user_id)
         if not user:
@@ -302,6 +406,10 @@ def create_app():
         cachorro = Cachorro.query.get(cachorro_id)
         if not cachorro:
             return jsonify({"message": "Cachorro não encontrado."}), 404
+
+        auth_error = _require_self(cachorro.user_id)
+        if auth_error:
+            return auth_error
         
         db.session.delete(cachorro) # Remove o cachorro da sessão
         db.session.commit() # Salva a exclusão
@@ -318,6 +426,10 @@ def create_app():
         cachorro = Cachorro.query.get(cachorro_id)
         if not cachorro:
             return jsonify({"message": "Cachorro não encontrado."}), 404
+
+        auth_error = _require_self(cachorro.user_id)
+        if auth_error:
+            return auth_error
         return jsonify(cachorro.to_dict(include_breed=True))
 
     # Rota PUT para atualizar um cachorro por ID
@@ -341,7 +453,12 @@ def create_app():
         cachorro = Cachorro.query.get(cachorro_id)
         if not cachorro:
             return jsonify({"message": "Cachorro não encontrado."}), 404
-        data = request.get_json()
+
+        auth_error = _require_self(cachorro.user_id)
+        if auth_error:
+            return auth_error
+
+        data = request.get_json() or {}
         # Atualiza campos se fornecidos
         cachorro.nome_pet = data.get('nome_pet', cachorro.nome_pet)
         cachorro.idade = data.get('idade', cachorro.idade)
@@ -353,6 +470,8 @@ def create_app():
                 return jsonify({"message": "Raça não encontrada."}), 404
             cachorro.raca_id = data['raca_id']
         if 'user_id' in data:
+            if data['user_id'] != cachorro.user_id:
+                return jsonify({"message": "Ação não permitida: não é possível transferir o pet para outro usuário."}), 403
             if not User.query.get(data['user_id']):
                 return jsonify({"message": "Usuário não encontrado."}), 404
             cachorro.user_id = data['user_id']
@@ -367,6 +486,10 @@ def create_app():
         Uso: GET /usuarios/{user_id}
         """
 
+        auth_error = _require_self(user_id)
+        if auth_error:
+            return auth_error
+
         user = User.query.get(user_id)
         if not user:
             return jsonify({"message": "Usuário não encontrado."}), 404
@@ -379,6 +502,10 @@ def create_app():
 
         Uso: DELETE /usuarios/{user_id}
         """
+
+        auth_error = _require_self(user_id)
+        if auth_error:
+            return auth_error
 
         user = User.query.get(user_id)
         if not user:
@@ -397,13 +524,26 @@ def create_app():
             { "nome_completo": "Novo nome", "email": "novo@example.com", "telefone": "..." }
         """
 
+        auth_error = _require_self(user_id)
+        if auth_error:
+            return auth_error
+
         user = User.query.get(user_id)
         if not user:
             return jsonify({"message": "Usuário não encontrado."}), 404
         data = request.get_json() or {}
         user.nome_completo = data.get('nome_completo', user.nome_completo)
-        user.email = data.get('email', user.email)
+        if 'email' in data:
+            novo_email = (data.get('email') or '').strip().lower()
+            if novo_email and novo_email != user.email:
+                existing_user = User.query.filter_by(email=novo_email).first()
+                if existing_user and existing_user.id != user.id:
+                    return jsonify({"message": "Este e-mail já está cadastrado."}), 409
+                user.email = novo_email
         user.telefone = data.get('telefone', user.telefone)
+        nova_senha = (data.get('senha') or '').strip()
+        if nova_senha:
+            user.set_password(nova_senha)
         db.session.commit()
         return jsonify(user.to_dict())
 
@@ -562,8 +702,17 @@ def create_app():
         Uso: GET /usuarios
         """
 
-        users = User.query.all()
-        return jsonify([user.to_dict() for user in users])
+        requester_user_id = _get_request_user_id()
+        if requester_user_id is None:
+            return jsonify({"message": "Autenticação ausente. Faça login novamente."}), 401
+        if requester_user_id == -1:
+            return jsonify({"message": "Header X-User-Id inválido."}), 400
+
+        user = User.query.get(requester_user_id)
+        if not user:
+            return jsonify({"message": "Usuário não encontrado."}), 404
+
+        return jsonify([user.to_dict()])
 
     # --- Servir Frontend estático (catch-all) ---
     # Define o diretório do frontend (pasta `frontend` no nível do projeto)
